@@ -1,0 +1,103 @@
+﻿@using DropDownsAnidadosMVC.Models.ViewModels
+@model DropDownsVM;
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <label for="sucursalDropDown">Sucursal</label>
+        <select id="sucursalDropDown" class="form-control">
+            <option value=""> --Seleccione una sucursal--</option>
+            @foreach(var item in Model.ListaSucursal)
+            {
+                <option value="@item.Id"> @item.Nombre</option>
+            }
+        </select>
+    </div>
+
+    <div class="col-md-4">
+        <label for="categoriaDropDown">Categorias</label>
+        <select id="categoriaDropDown" class="form-control" disabled>
+            <option value=""> --Seleccione una categoría--</option>
+            
+        </select>
+    </div>
+
+    <div class="col-md-4">
+        <label for="productoDropDown">Producto</label>
+        <select id="productoDropDown" class="form-control" disabled>
+            <option value=""> --Seleccione un producto--</option>
+
+        </select>
+    </div>
+</div>
+
+ @section Scripts{
+  <script>
+         
+        $(document).ready(function () {
+            $("#sucursalDropDown").change(function () {
+                var sucursalID = $(this).val()
+                
+                //limpiar y deshabilitar dropdown dependientes
+                $("#categoriaDropDown").empty().append("<option value = '' >--Seleccione una categoria-- </option>").prop("disabled",true)
+                $("#productoDropDown").empty().append("<option value = '' >--Seleccione un producto -- </option>").prop("disabled", true)
+
+                //si existe sucursalid hacer solicitud AJAX para obtener las categorias asociadas a la sucursal
+                if (sucursalID) {
+                    $.ajax({
+                        url: "/Home/ObtenerCategorias",
+                        type: "get",
+                        data: { sucursalID: sucursalID },
+                        success: function(categorias){
+
+                            //llenar dropdown categorias
+                            $.each(categorias, function (index, categoria) {
+                                $("#categoriaDropDown").append("<option value = '" + categoria.id + "' > "+ categoria.nombre+" </option>")
+                            })
+
+                            //habilitar el dropdown de categorias
+                            $("#categoriaDropDown").prop("disabled",false)
+                        }
+                    })
+                }
+               
+            })
+
+            $("#categoriaDropDown").change(function () {
+                var categoriaID = $(this).val()
+
+                //limpiar y deshabilitar dropdown dependientes
+                
+                $("#productoDropDown").empty().append("<option value = '' >--Seleccione un producto -- </option>").prop("disabled", true)
+
+                //si existe categoriaID hacer solicitud AJAX para obtener los productos asociadas a la categoria
+                if (categoriaID) {
+                    $.ajax({
+                        url: "/Home/ObtenerProductos",
+                        type: "get",
+                        data: { categoriaID: categoriaID },
+                        success: function (productos) {
+
+                            //llenar dropdown productos
+                            $.each(productos, function (index, producto) {
+                                $("#productoDropDown").append("<option value = '" + producto.id + "' > " + producto.nombre + " </option>")
+                            })
+
+                            //habilitar el dropdown de productos
+                            $("#productoDropDown").prop("disabled", false)
+                        }
+                    })
+                }
+
+            })
+        })
+  </script>
+
+ }
